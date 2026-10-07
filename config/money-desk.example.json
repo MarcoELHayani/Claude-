@@ -1,0 +1,80 @@
+{
+  "owner": {
+    "name": "Marco El Hayani",
+    "email": "owner@example.com",
+    "timezone": "Europe/Vilnius"
+  },
+  "notion": {
+    "money_desk_page": "<notion money_desk_page>",
+    "marco_hq_page": "<notion marco_hq_page>",
+    "subscriptions_ds": "<notion subscriptions_ds>",
+    "invoices_ds": "<notion invoices_ds>",
+    "receipts_ds": "<notion receipts_ds>"
+  },
+  "gmail": {
+    "labels": {
+      "accountancy": {
+        "name": "Invoices& Payment/Accountancy",
+        "id": "<gmail label id: Invoices& Payment/Accountancy>"
+      },
+      "unpaid": {
+        "name": "Invoices& Payment/Unpaid",
+        "id": "<gmail label id: Invoices& Payment/Unpaid>"
+      },
+      "paid": {
+        "name": "Invoices& Payment/Paid",
+        "id": "<gmail label id: Invoices& Payment/Paid>"
+      },
+      "filed": {
+        "name": "Money Desk/Filed",
+        "id": "<gmail label id: Money Desk/Filed>"
+      },
+      "software_licenses": {
+        "name": "Courses/Software License",
+        "id": "<gmail label id: Courses/Software License>"
+      },
+      "to_be_deleted": {
+        "name": "To Be Deleted",
+        "id": "<gmail label id: To Be Deleted>"
+      }
+    },
+    "entity_by_recipient": {
+      "<AIV mailbox address>": "AIV"
+    }
+  },
+  "drive": {
+    "finances_folder": "<drive finances_folder id>",
+    "receipts_folder": "<drive receipts_folder id>",
+    "weekly_finance_folder": "<drive weekly_finance_folder id>"
+  },
+  "bill": {
+    "autosend_chasers": true,
+    "chase_days_overdue": [
+      7,
+      14,
+      21
+    ],
+    "min_days_between_chasers": 5,
+    "max_autosends_per_run": 5,
+    "default_payment_terms_days": 30,
+    "po_required_clients": [
+      "<client domain that issues POs>"
+    ]
+  },
+  "entities": {
+    "FAV Studios": {
+      "legal_name": "FAV Studios",
+      "services": "equipment hire",
+      "vat_rate": 0,
+      "address": "",
+      "bank": ""
+    },
+    "Fav Production": {
+      "legal_name": "Muhsin El Hayani / Fav Production",
+      "services": "production services",
+      "vat_rate": null,
+      "address": "",
+      "bank": ""
+    }
+  }
+}
