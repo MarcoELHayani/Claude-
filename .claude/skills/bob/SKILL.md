@@ -22,7 +22,8 @@ First run only: widen to `newer_than:13m`, max 100 per run, and carry on next ru
 - Apply Gmail labels `Invoices& Payment/Accountancy` and `Money Desk/Filed` (`label_message`, ids in config). Labelling is what makes it idempotent: always label last, after the Notion write succeeded.
 
 ## 3. PDFs into Drive
-The Apps Script in `apps-script/bob-receipt-saver.gs` (installed once in Marco's Google account) copies every PDF from the `Invoices& Payment/Accountancy` label into `Receipts/YYYY-MM/` hourly. Bob doesn't download attachments (that costs a lot of tokens per receipt).
+The Apps Script in `apps-script/bob-receipt-saver.gs` (installed once in Marco's Google account) copies every PDF from the `Invoices& Payment/Accountancy` label into `Receipts/YYYY-MM/` hourly, and writes `receipt-index.json` in each month folder (Message ID, attachment, SHA-256, Drive link). Bob doesn't download attachments (that costs a lot of tokens per receipt).
+To link a Drive file, find the row's `Message ID` in that month's index. `Has PDF` only means the email had an attachment; set `Archive state = Drive verified` only when the index entry exists and its Drive link opens. The index is a document finder, never proof of payment.
 For receipts with **no** PDF (body-only receipts like many Stripe/Apple mails): Bob creates a Google Doc in `Receipts/YYYY-MM/` (`create_file`, `textContent` = the plain-text receipt, title `YYYY-MM-DD Vendor Amount`) so the accountant has a document for every line.
 On Fridays Bob checks the latest month folder exists; if the script hasn't run in 2 days, flag Marco.
 

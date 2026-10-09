@@ -19,7 +19,7 @@ Home: Notion › Marco HQ › 💸 Money Desk (Subscriptions, Invoices and Recei
 There are no servers and no API keys. The bots are Claude Code skills (`.claude/skills/*`) using connectors Marco already has. Money maths, chase decisions and invoice rules live in plain Python (`moneydesk/`) with tests, so they come out the same on every run.
 
 ## One-time setup
-1. **Receipt PDFs:** open script.google.com, create a new project and paste `apps-script/bob-receipt-saver.gs`. Set the `RECEIPTS_FOLDER_ID` script property, run `install` and approve the permissions.
+1. **Receipt PDFs:** open script.google.com, create a new project and paste `apps-script/bob-receipt-saver.gs`. Set the `RECEIPTS_FOLDER_ID` script property, run `saveReceipts` once and check one saved PDF against its `receipt-index.json` entry, then run `install`. Full checklist and limits: `apps-script/README.md`.
 2. **Config:** copy `config/money-desk.example.json` to `config/money-desk.json` (gitignored) for local runs. The scheduled runs read it from the Notion Money Desk page.
 3. **Invoice details:** fill `entities.*.address` and `entities.*.bank` in `config/money-desk.json` (and the Notion config block). Bill refuses to build an invoice PDF until these are filled.
 4. **Accountant:** share the Drive `Receipts` folder with them once.
@@ -37,6 +37,7 @@ There are no servers and no API keys. The bots are Claude Code skills (`.claude/
 ## Develop
 ```
 python3 -m unittest discover -s tests -t .
+(cd apps-script && node --test test-receipt-saver.cjs)
 python3 -m moneydesk chase invoices.json --today 2026-10-07
 python3 -m moneydesk invoice spec.json out.pdf
 python3 -m moneydesk monthly subs.json
