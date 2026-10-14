@@ -48,14 +48,14 @@
     "weekly_finance_folder": "<drive weekly_finance_folder id>"
   },
   "bill": {
-    "autosend_chasers": true,
+    "autosend_chasers": false,
     "chase_days_overdue": [
       7,
       14,
       21
     ],
     "min_days_between_chasers": 5,
-    "max_autosends_per_run": 5,
+    "max_autosends_per_run": 0,
     "default_payment_terms_days": 30,
     "po_required_clients": [
       "<client domain that issues POs>"

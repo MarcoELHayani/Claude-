@@ -42,6 +42,8 @@ def compute(spec: dict) -> dict:
 def validate(spec: dict, cfg: dict) -> dict:
     """Returns computed totals or raises InvoiceError listing every problem at once."""
     problems = []
+    if not isinstance(spec.get("lines"), list) or not spec["lines"]:
+        raise InvoiceError("no lines: supply a nonempty list")
     entity = spec.get("entity")
     if entity not in ENTITY_KIND:
         problems.append(f"entity must be one of {list(ENTITY_KIND)}")

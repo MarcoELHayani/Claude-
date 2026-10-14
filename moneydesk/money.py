@@ -1,5 +1,6 @@
 """Money maths. Everything goes through Decimal; never float, never mental arithmetic."""
 from collections import defaultdict
+import re
 from decimal import Decimal, ROUND_HALF_UP
 
 CENT = Decimal("0.01")
@@ -15,13 +16,20 @@ CYCLE_MONTHS = {
 def dec(value) -> Decimal:
     """Parse '£1,090.50', '1.090,50' is NOT supported on purpose: amounts must be normalised first."""
     if isinstance(value, Decimal):
+        if not value.is_finite():
+            raise ValueError('money must be finite')
         return value
     if isinstance(value, float):
         value = repr(value)
-    text = str(value).strip().replace(",", "")
+    text = str(value).strip()
     for symbol in "£€$ ":
         text = text.replace(symbol, "")
-    return Decimal(text)
+    if ',' in text and not re.fullmatch(r'[+-]?\d{1,3}(,\d{3})+(\.\d+)?', text):
+        raise ValueError('ambiguous number format; normalise decimal and thousands separators first')
+    result = Decimal(text.replace(',', ''))
+    if not result.is_finite():
+        raise ValueError('money must be finite')
+    return result
 
 
 def money(value) -> Decimal:

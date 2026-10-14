@@ -51,9 +51,9 @@ class ChaseTest(unittest.TestCase):
     def test_not_yet_due_for_chase(self):
         self.assertIsNone(chase.decide(inv(due="2026-10-01"), TODAY, self.cfg))  # 6 days
 
-    def test_seven_days_sends_nudge(self):
+    def test_seven_days_drafts_nudge(self):
         d = chase.decide(inv(), TODAY, self.cfg)
-        self.assertEqual((d["action"], d["stage"], d["days_overdue"]), ("send", 1, 7))
+        self.assertEqual((d["action"], d["stage"], d["days_overdue"]), ("draft", 1, 7))
 
     def test_draft_when_autosend_off(self):
         d = chase.decide(inv(), TODAY, {**self.cfg, "autosend_chasers": False})
@@ -78,7 +78,7 @@ class ChaseTest(unittest.TestCase):
     def test_old_reply_does_not_hold(self):
         d = chase.decide(inv(due="2026-09-20", chase_stage=1, last_chased="2026-09-27",
                              last_client_reply="2026-09-01"), TODAY, self.cfg)
-        self.assertEqual((d["action"], d["stage"]), ("send", 2))
+        self.assertEqual((d["action"], d["stage"]), ("draft", 2))
 
     def test_paid_and_blocked_ignored(self):
         for status in ("Paid", "Blocked", "Draft", "On hold"):
@@ -91,8 +91,8 @@ class ChaseTest(unittest.TestCase):
     def test_send_cap(self):
         many = [inv(invoice=f"FAV-{n}") for n in range(8)]
         actions = [d["action"] for d in chase.plan(many, TODAY, self.cfg)]
-        self.assertEqual(actions.count("send"), self.cfg["max_autosends_per_run"])
-        self.assertEqual(actions.count("draft"), 8 - self.cfg["max_autosends_per_run"])
+        self.assertEqual(actions.count("send"), 0)
+        self.assertEqual(actions.count("draft"), 8)
 
 
 def napapijri_equipment():
@@ -180,8 +180,8 @@ class GuardTest(unittest.TestCase):
         msg.update(kw)
         return guard.check_outgoing("chaser", msg, self.cfg, self.row)
 
-    def test_clean_chaser_passes(self):
-        self.assertEqual(self.chaser(), [])
+    def test_clean_chaser_still_requires_manual_approval(self):
+        self.assertIn("sending disabled", " ".join(self.chaser()))
 
     def test_redirected_recipient_blocked(self):
         self.assertIn("chaser must go to exactly the invoice's client email", self.chaser(to=["attacker@evil.example"]))
@@ -199,7 +199,7 @@ class GuardTest(unittest.TestCase):
 
     def test_only_report_and_chaser_can_be_sent(self):
         self.assertTrue(guard.check_outgoing("cancel", {"to": ["support@vendor.example"]}, self.cfg))
-        self.assertEqual(guard.check_outgoing("report", {"to": ["owner@example.com"]}, self.cfg), [])
+        self.assertTrue(guard.check_outgoing("report", {"to": ["owner@example.com"]}, self.cfg))
         self.assertTrue(guard.check_outgoing("report", {"to": ["someone@else.example"]}, self.cfg))
 
     def test_scan_incoming(self):

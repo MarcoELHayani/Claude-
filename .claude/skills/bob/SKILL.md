@@ -16,15 +16,15 @@ First run only: widen to `newer_than:13m`, max 100 per run, and carry on next ru
 
 ## 2. For each receipt
 - `python3 -m moneydesk scan` on the body. Flagged → don't file or label it; list it for Marco as "possible fraud: <flags>".
-- `get_message` with `PLAIN_TEXT`. Extract vendor, date, total, VAT, currency, receipt/invoice number, and whether there's a PDF attachment (`attachments[].mimeType == application/pdf`).
-- Entity: recipient any address in `gmail.entity_by_recipient` → AIV; production gear, editing/AI tools, studio costs → FAV Studios; producer/crew services → Fav Production; clothes, food, personal travel → Personal; unsure → Unknown (list it for Marco, still file it).
-- Upsert into Notion Receipts (`notion.receipts_ds`), matched on `Message ID`: Vendor, Date, Amount, VAT, Currency, Entity, Category, Receipt no, Gmail (viewUrl), Message ID, Has PDF.
-- Apply Gmail labels `Invoices& Payment/Accountancy` and `Money Desk/Filed` (`label_message`, ids in config). Labelling is what makes it idempotent: always label last, after the Notion write succeeded.
+- `get_message` with `PLAIN_TEXT`. Extract vendor, date, total, VAT, currency, receipt/invoice number, and whether there's a PDF attachment (PDF MIME type or a .pdf filename, including generic octet-stream MIME; the saver checks the header).
+- Entity: use actual bill-to, business purpose and Marco's explicit allocation. Recipient aliases are hints only. Do not reclassify AIV costs as Studios because mail arrived in a Studios inbox. Unknown or conflicting evidence stays Unknown; record the source.
+- Upsert into Notion Receipts (`notion.receipts_ds`), matched on `Message ID` AND exact vendor/entity/invoice reference (invoice and receipt attachments may represent one transaction). If duplicate lookup fails, stop the write and retain findings on the existing task. Populate Match key, Archive state = Email only until verified, and Drive file only after readback: Vendor, Date, Amount, VAT, Currency, Entity, Category, Receipt no, Gmail (viewUrl), Message ID, Has PDF.
+- Apply Gmail labels `Invoices& Payment/Accountancy` and `Money Desk/Filed` (`label_message`, ids in config). Labels alone are not deduplication: always label last, after the Notion write succeeded.
 
 ## 3. PDFs into Drive
 The Apps Script in `apps-script/bob-receipt-saver.gs` (installed once in Marco's Google account) copies every PDF from the `Invoices& Payment/Accountancy` label into `Receipts/YYYY-MM/` hourly, and writes `receipt-index.json` in each month folder (Message ID, attachment, SHA-256, Drive link). Bob doesn't download attachments (that costs a lot of tokens per receipt).
 To link a Drive file, find the row's `Message ID` in that month's index. `Has PDF` only means the email had an attachment; set `Archive state = Drive verified` only when the index entry exists and its Drive link opens. The index is a document finder, never proof of payment.
-For receipts with **no** PDF (body-only receipts like many Stripe/Apple mails): Bob creates a Google Doc in `Receipts/YYYY-MM/` (`create_file`, `textContent` = the plain-text receipt, title `YYYY-MM-DD Vendor Amount`) so the accountant has a document for every line.
+For receipts with **no** PDF: first match a saved document by source message ID and exact transaction. Reuse an existing document; if lookup fails, stop instead of duplicating it. For a genuinely new body-only receipt Bob prepares a Google Doc in `Receipts/YYYY-MM/` (`create_file`, `textContent` = the plain-text receipt, title `YYYY-MM-DD Vendor Amount`) so the accountant has a document for every line.
 On Fridays Bob checks the latest month folder exists; if the script hasn't run in 2 days, flag Marco.
 
 ## Output (for the daily/Friday run)

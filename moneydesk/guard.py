@@ -36,12 +36,14 @@ def _norm(addr: str) -> str:
 
 
 def check_outgoing(kind: str, msg: dict, cfg: dict, invoice: dict | None = None) -> list[str]:
-    """msg: {to: [..], cc: [..], bcc: [..], body: str, thread_participants: [..]}. Returns problems ([] = safe)."""
+    """Validate message shape; always reject sending under current draft-only authority."""
     to = [_norm(a) for a in msg.get("to") or []]
     extra = [a for a in (msg.get("cc") or []) + (msg.get("bcc") or []) if a]
     body = msg.get("body") or ""
     owner = _norm(cfg["owner"]["email"])
-    problems = []
+    # Current authority is draft-only. A model-produced approval flag or stale
+    # autosend setting must never authorize an external send.
+    problems = ["sending disabled: prepare a draft for Marco's explicit approval"]
 
     if not to or not all(EMAIL.match(a) for a in to):
         problems.append("missing or malformed recipient")

@@ -18,9 +18,9 @@ A vendor is **recurring** when it billed ≥2 times at a regular gap (≈7, ≈3
 Read a full message only when the snippet lacks the amount (`get_message` with `PLAIN_TEXT`).
 
 ## 2. Upsert into Notion Subscriptions (`notion.subscriptions_ds`)
-Match on `Service` (normalise: "Anthropic, PBC" → "Anthropic"). Set Amount, Currency, Cycle, Entity, Category, Billing email, Last charged, Next renewal (last charged + cycle), Last receipt (Gmail viewUrl).
+Match on service plus subscription/account identifier, entity and currency. Never collapse two separate accounts into one Service row. Normalise vendor names only after matching identity; ambiguity stays Unknown. Set Amount, Currency, Cycle, Entity, Category, Billing email, Last charged, Next renewal (last charged + cycle), Last receipt (Gmail viewUrl).
 `Monthly cost`: compute with `python -m moneydesk monthly subs.json`, never by hand.
-Entity: email to any address in `gmail.entity_by_recipient` → AIV; production/editing tools → FAV Studios unless the receipt names otherwise; shopping/personal → Personal; unsure → Unknown.
+Entity: use bill-to, actual purpose and Marco's explicit allocation; recipient aliases are hints only. Preserve AIV expense allocation. Conflicting evidence stays Unknown.
 New rows start `Status = Review`. Never overwrite a status Marco set (Keep, Cancel approved, Cancelled).
 
 ## 3. Verdict (`Verdict` + one-line `Why`)
@@ -36,7 +36,7 @@ Before trusting any billing email, `python3 -m moneydesk scan` it. Flagged (fake
 1. Find the official cancel path: account billing page URL, or support email if the vendor cancels by email. Write it in `Cancel how`.
 2. If cancellation is by email: create a Gmail **draft** to the vendor's support address from the billing thread, short and final ("Please cancel my <plan> on <account email> at the end of the current period and confirm by email."). Never send it.
 3. If it's a link: put the exact link and the clicks in `Cancel how`. Axel cannot log in.
-4. Set `Status = Cancel requested`. Tell Marco in the run summary: "<Service>: one click → <link>" or "draft ready → <draft link>".
+4. Keep `Status = Cancel approved` while only a draft or link exists; do not count it as requested or cancelled. Set `Cancel requested` only after a verified submitted request or Marco's confirmation. Tell Marco only when action is essential: "<Service>: one click → <link>" or "draft ready → <draft link>".
 5. When a confirmation email arrives (`"subscription" (cancelled OR canceled OR "will end")` from the vendor), set `Status = Cancelled`, `Cancelled on`.
 
 ## 5. Retention offers

@@ -51,9 +51,8 @@ def decide(invoice: dict, today: date, cfg: dict) -> dict | None:
     next_stage = stage + 1
     if next_stage >= 3:
         action = "flag_call"
-    elif cfg.get("autosend_chasers"):
-        action = "send"
     else:
+        # Legacy configuration cannot restore superseded standing authority.
         action = "draft"
     return {"invoice": invoice["invoice"], "action": action, "stage": next_stage,
             "days_overdue": overdue, "reason": f"{overdue} days overdue"}
