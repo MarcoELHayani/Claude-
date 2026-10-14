@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+*.pdf
+# Real IDs and addresses: never commit. Rebuilt from Notion on each run.
+config/money-desk.json
+invoices.json
+week.json
+subs.json
+spec.json
+outgoing.json
